@@ -5,7 +5,9 @@
             <input type="text" class="new-todo" placeholder="Ajouter une tache"
                    v-model="newTodo" @keyup.enter="addTodo">
         </header>
-        <div class="main">
+        <section class="main">
+            <input id="toggle-all" type="checkbox" class="toggle-all" v-model="allDone">
+            <label for="toggle-all">Mark all as complete</label>
             <ul class="todo-list">
                 <li class="todo" v-for="todo in filteredTodos" :class="{completed: todo.completed}">
                     <div class="view">
@@ -14,7 +16,7 @@
                     </div>
                 </li>
             </ul>
-        </div>
+        </section>
         <footer class="footer">
             <span class="todo-count"><strong>{{ remaining }}</strong> Tâches à faire</span>
             <ul class="filters">
@@ -43,6 +45,14 @@
             }
         },
         computed: {
+            allDone: {
+                get () {
+                    return this.remaining === 0
+                },
+                set (value) {
+                    this.todos.map(todo => todo.completed = value)
+                }
+            },
             remaining () {
                 return this.todos.filter(todo => !todo.completed).length
             },
@@ -61,8 +71,8 @@
                 this.todos.push({
                     name: this.newTodo,
                     completed: false
-                });
-                this.newTodo = '';
+                })
+                this.newTodo = ''
             }
         }
     }
