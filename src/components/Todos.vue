@@ -9,12 +9,20 @@
             <input id="toggle-all" type="checkbox" class="toggle-all" v-model="allDone">
             <label for="toggle-all">Mark all as complete</label>
             <ul class="todo-list">
-                <li class="todo" v-for="todo in filteredTodos" :class="{completed: todo.completed}">
+                <li class="todo" v-for="todo in filteredTodos"
+                    :class="{completed: todo.completed, editing: todo === editing}">
                     <div class="view">
                         <input type="checkbox" class="toggle" v-model="todo.completed">
-                        <label>{{ todo.name }}</label>
+                        <label @dblclick="editTodo(todo)">{{ todo.name }}</label>
                         <button class="destroy" @click.prevent="deleteTodo(todo)"></button>
                     </div>
+                    <input type="text" class="edit"
+                           @keyup.enter="doneEdit"
+                           @keyup.esc="cancelEdit"
+                           @blur="doneEdit"
+                           v-model="todo.name"
+                           v-focus="todo === editing"
+                    >
                 </li>
             </ul>
         </section>
@@ -36,16 +44,16 @@
 </template>
 
 <script>
+    import Vue from 'vue'
+
     export default {
         name: 'Todos',
         data () {
             return {
-                todos: [{
-                    name: 'Tache de test',
-                    completed: false
-                }],
+                todos: [],
                 newTodo: '',
-                filter: 'all'
+                filter: 'all',
+                editing: null
             }
         },
         computed: {
@@ -82,12 +90,31 @@
                     completed: false
                 })
                 this.newTodo = ''
+                this.oldTodo = ''
+            },
+            editTodo (todo) {
+                this.editing = todo
+                this.oldTodo = todo.name
+            },
+            doneEdit () {
+                this.editing = false
+            },
+            cancelEdit () {
+                this.editing.name = this.oldTodo
+                this.doneEdit()
             },
             deleteTodo (item) {
                 this.todos = this.todos.filter(todo => todo !== item)
             },
             deleteCompleted () {
                 this.todos = this.todos.filter(todo => !todo.completed)
+            }
+        },
+        directives: {
+            focus (el, value) {
+                if (value) {
+                    Vue.nextTick(() => el.focus())
+                }
             }
         }
     }
